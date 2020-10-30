@@ -122,6 +122,7 @@ module guess_grids
   public :: load_prsges
   public :: load_geop_hgt
   public :: load_gsdpbl_hgt
+  public :: load_pbl_hgt    !emily
   public :: add_rtm_layers
   public :: load_fact10
   public :: comp_fact10
@@ -1718,6 +1719,95 @@ contains
     return
   end subroutine load_gsdpbl_hgt
 
+!>>emily
+!-------------------------------------------------------------------------
+!    NOAA/NCEP, National Centers for Environmental Prediction GSI        !
+!-------------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: load_pbl_hgt --- Populate PBL height
+!
+! !INTERFACE:
+!
+  subroutine load_pbl_hgt(mype)
+
+! !USES:
+
+    use constants, only: one,rd_over_cp_mass,r1000,ten,zero,two
+    use gridmod, only: lat2, lon2, nsig, ak5, bk5
+
+    implicit none
+
+! !INPUT PARAMETERS:
+
+
+! !DESCRIPTION: populate guess geopotential height in millibars
+!
+!
+! !REVISION HISTORY:
+!   2011-06-06  Ming Hu
+!   2013-02-22  Jacob Carley - Added NMMB
+!
+! !REMARKS:
+!   language: f90
+!   machine:  JET
+!
+! !AUTHOR:
+!
+!EOP
+!-------------------------------------------------------------------------
+
+    character(len=*),parameter::myname_=myname//'*load_pbl_hgt'
+    integer(i_kind)              , intent(in   ) :: mype
+    integer(i_kind) i,j,k,jj,ier,istatus
+    real(r_kind),dimension(nsig):: thetav
+    real(r_kind),dimension(nsig):: pbk
+    real(r_kind) :: thsfc, d
+    real(r_kind),dimension(:,:  ),pointer::ges_ps=>NULL()
+    real(r_kind),dimension(:,:,:),pointer::ges_tv=>NULL()
+
+!   Compute geopotential height at midpoint of each layer
+    do jj=1,nfldsig
+       ier=0
+       call gsi_bundlegetpointer(gsi_metguess_bundle(jj),'ps' ,ges_ps ,istatus)
+       ier=ier+istatus
+       call gsi_bundlegetpointer(gsi_metguess_bundle(jj),'tv' ,ges_tv ,istatus)
+       ier=ier+istatus
+       if(ier/=0) call die(myname_,'not all fields available, ier=',ier)
+
+       do j=1,lon2
+          do i=1,lat2
+
+             do k=1,nsig
+                pbk(k)    = ten*(ak5(k)+(bk5(k)*ges_ps(i,j)))
+    thetav(k) = ges_tv(i,j,k)*(r1000/pbk(k))**rd_over_cp_mass
+             end do
+
+             pbl_height(i,j,jj) = zero
+             thsfc = thetav(1)
+             k=1
+             DO while (abs(pbl_height(i,j,jj)) < 0.0001_r_kind)
+               if( thetav(k) > thsfc + 1.0_r_kind ) then
+                 pbl_height(i,j,jj) = float(k) - (thetav(k) - (thsfc + 1.0_r_kind))/   &
+                             max((thetav(k)-thetav(k-1)),0.01_r_kind)
+               endif
+               k=k+1
+             ENDDO
+             if(abs(pbl_height(i,j,jj)) < 0.0001_r_kind) pbl_height(i,j,jj)=two
+             k=int(pbl_height(i,j,jj))
+             if( k < 1 .or. k > nsig-1) then
+                write(6,*) ' Error in PBL height calculation ',mype,i,j,pbl_height(i,j,jj)
+             endif
+             d=pbl_height(i,j,jj) - k
+             pbl_height(i,j,jj) = pbk(k) * (one-d) + pbk(k+1) * d
+          end do
+       end do
+    end do
+666 format(a24,2x,i6,2x,3(f12.5,2x))
+
+    return
+  end subroutine load_pbl_hgt
+!<<emily
 !-------------------------------------------------------------------------
 !    NOAA/NCEP, National Centers for Environmental Prediction GSI        !
 !-------------------------------------------------------------------------
