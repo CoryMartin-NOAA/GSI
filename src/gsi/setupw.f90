@@ -383,15 +383,13 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
   icat=24     ! index of data level category
   ijb=25      ! index of non linear qc parameter
   ihil=26     ! index of  hilbert curve weight
-  iptrbu=27   ! index of u perturbation
-  iptrbv=28   ! index of v perturbation
 
-  iswcm=26    ! spectral type of wind
-  isaza=27    ! saza satellite zen angle
-  isccf=28    ! spec chan freq (hertz)
+  iswcm=27    ! spectral type of wind
+  isaza=28    ! saza satellite zen angle
+  isccf=29    ! spec chan freq (hertz)
 
-  iptrbu=29   ! index of u perturbation
-  iptrbv=30   ! index of v perturbation
+  iptrbu=30   ! index of u perturbation
+  iptrbv=31   ! index of v perturbation
 
   mm1=mype+1
   scale=one
