@@ -8,6 +8,7 @@
 
 ##### things you should change/confirm
 adate=$1
+GSIDir=/scratch1/NCEPDEV/da/Cory.R.Martin/GSI/GSI_forJEDI_v16/
 iodaconvbuild=/scratch1/NCEPDEV/da/Cory.R.Martin/JEDI/ioda-converters/build
 JEDImodule=/scratch1/NCEPDEV/da/Cory.R.Martin/JEDI/env_jedi_rh
 ##### things it is not necessary to change but you can

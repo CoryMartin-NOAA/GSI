@@ -30,6 +30,10 @@ cd $IODA_data_iodaworkdir
 # make output directory
 rm -rf $IODA_data_iodaoutdir
 mkdir -p $IODA_data_iodaoutdir
+rm -rf $IODA_data_geovaloutdir
+mkdir -p $IODA_data_geovaloutdir
+
+adate=$IODA_time_year$IODA_time_month$IODA_time_day$IODA_time_cycle
 
 #
 # run script

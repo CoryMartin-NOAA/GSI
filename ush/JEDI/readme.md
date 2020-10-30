@@ -45,10 +45,14 @@ Things specific to the IODA-converters portion
 - JEDImodule: path to a modulefile to source to get the JEDI environment
 Other things you will still need to change
 - adate: YYYYMMDDHH analysis date (or it gets this from $1)
+- GSIDir: path to where you cloned this repository to
 - rootwork: if you changed this before, need to be consistent!
 
 To run this again, without running GSI, just submit the file to slurm.
 sbatch submit_run_iodaconv.sh YYYYMMDDHH
+
+### Where/what is the output?
+Files will be placed in subdirectories of $RootWork.
 
 ### Summary of changes made between NOAA-EMC/GSI/release/gfsda.v16.0.0 and this branch feature/jedi_gfsv16
 
