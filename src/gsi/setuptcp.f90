@@ -708,7 +708,7 @@ subroutine setuptcp(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diags
           endif
           call nc_diag_data2d("virtual_temperature", tvges)
 
-          call nc_diag_metadata("surface_air_pressure", pgesorig*r1000 )
+          call nc_diag_metadata("surface_air_pressure", pgesorig )
           call nc_diag_metadata("surface_geopotential_height", zsges )
 
   end subroutine contents_netcdf_diag_
