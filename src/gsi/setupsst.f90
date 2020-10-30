@@ -606,6 +606,7 @@ contains
            call nc_diag_metadata("Observation",                   sngl(data(isst,i)) )
            call nc_diag_metadata("Obs_Minus_Forecast_adjusted",   sngl(ddiff)      )
            call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl(data(isst,i)-sstges) )
+           call nc_diag_metadata("sea_surface_temperature", sngl(sstges) )
 
            if (nst_gsi>0) then
               call nc_diag_metadata("FoundationTempBG",        sngl(data(itref,i)) )
