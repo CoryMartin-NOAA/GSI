@@ -139,7 +139,6 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   use gsi_metguess_mod, only : gsi_metguess_get,gsi_metguess_bundle
   use setupdbz_lib, only:hx_dart
   use sparsearr, only: sparr2, new, size, writearray, fullarray
-
   implicit none
 
 ! Declare passed variables
@@ -186,7 +185,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind) sinazm,cosazm,sintilt,costilt,cosazm_costilt,sinazm_costilt
   real(r_kind) ratio_errors,qcgross
   real(r_kind) ugesin,vgesin,wgesin,factw,skint,sfcr
-  real(r_kind) rwwind,presw
+  real(r_kind) rwwind,presw,rwwind1
   real(r_kind) errinv_input,errinv_adjst,errinv_final
   real(r_kind) err_input,err_adjst,err_final
   real(r_kind),dimension(nele,nobs):: data
@@ -600,7 +599,8 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
      cosazm_costilt = cosazm*costilt
      sinazm_costilt = sinazm*costilt
      !vTgesprofile= 5.40_r_kind*(exp((refgesprofile -43.1_r_kind)/17.5_r_kind)) 
-!    rwwind = (ugesin*cosazm+vgesin*sinazm)*costilt*factw
+     rwwind = (ugesin*cosazm+vgesin*sinazm)*costilt*factw
+     rwwind1 = (ugesin*cosazm+vgesin*sinazm)*costilt !*factw
      umaxmax=-huge(umaxmax)
      uminmin=huge(uminmin)
      kminmin=kbeambot
@@ -620,7 +620,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            kminmin=k
         end if
      end do
-     rwwind=data(irwob,i)
+!    rwwind=data(irwob,i)
      if(data(irwob,i)<uminmin) then
         rwwind=uminmin
         dpres=kminmin
@@ -635,8 +635,13 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
         numnotequal=numnotequal+1
      end if
      end if
-     
+
      ddiff = data(irwob,i) - rwwind
+
+!    write(6,*)rwwind, uminmin, umaxmax, rwwind1, ddiff, data(irwob,i)
+!    write(6,888)rwwind1,data(irwob,i),ugesin,vgesin,zob,dpres
+
+888  format(7f10.4)
 
      if (doradaroneob) then
        if(oneobvalue > -900_r_kind) then
@@ -648,20 +653,11 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
        endif
      endif
 
-!    adjust obs error for TDR data 
-     if( ratio_errors*error > tiny_r_kind &
+!    adjust obs error for TDR data
+     if(data(iobs_type,i) > three .and. ratio_errors*error > tiny_r_kind &
         .and. tdrerr_inflate) then
-        if(data(iobs_type,i) > three) then
-           ratio_errors = data(ier2,i)/abs(data(ier,i) + 1.0e6_r_kind*rhgh +  &
-             r8*rlow + min(max((abs(ddiff)-ten),zero)/ten,one)*data(ier,i))
-        end if
-!    apply same error adjustment for 88D data in HWRF with a 5 m/s
-!    minimum, which is also the same for TDR. This results in roughly
-!    2.5 m/s RMS fit with 10-km thinning
-        if(data(iobs_type,i) <= three) then
-           ratio_errors = data(ier2,i)/(5.0_r_kind + abs( 1.0e6_r_kind*rhgh +  &
-             r8*rlow + min(max((abs(ddiff)-ten),zero)/ten,one)*5.0_r_kind))
-        end if
+        ratio_errors = data(ier2,i)/abs(data(ier,i) + 1.0e6_r_kind*rhgh +  &
+          r8*rlow + min(max((abs(ddiff)-ten),zero)/ten,one)*data(ier,i))
      end if 
 
 !    Gross error checks
@@ -1165,6 +1161,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_metadata("Station_Elevation",       sngl(data(ielev,i))    )
            call nc_diag_metadata("Pressure",                sngl(presw)            )
            call nc_diag_metadata("Height",                  sngl(data(ihgt,i))     )
+           call nc_diag_metadata("Geometric_Height",                sngl(zob)      )
            call nc_diag_metadata("Time",                    sngl(dtime-time_offset))
            call nc_diag_metadata("Prep_QC_Mark",            sngl(zero)             )
            call nc_diag_metadata("Prep_Use_Flag",           sngl(data(iuse,i))     )
@@ -1181,8 +1178,29 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_metadata("Errinv_Final",            sngl(errinv_final)     )
 
            call nc_diag_metadata("Observation",                   sngl(data(irwob,i))  )
+           call nc_diag_metadata("Forecast_unadjusted",       sngl(rwwind1)          )
+           call nc_diag_metadata("Forecast_adjusted",       sngl(rwwind)          )
            call nc_diag_metadata("Obs_Minus_Forecast_adjusted",   sngl(ddiff)          )
            call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl(data(irwob,i)-rwwind) )
+
+           call nc_diag_metadata("cosazm_costilt", sngl(cosazm_costilt) )
+           call nc_diag_metadata("sinazm_costilt", sngl(sinazm_costilt) )
+           call nc_diag_metadata("sintilt", sngl(sintilt) )
+           call nc_diag_metadata("err2", sngl(error**2) )
+           call nc_diag_metadata("radar_tilt",sngl(data(itilt,i)*rad2deg))
+           call nc_diag_metadata("radar_azim",sngl(data(iazm,i)*rad2deg))
+
+!         my_head%raterr2 = ratio_errors**2
+!         my_head%cosazm_costilt = cosazm_costilt
+!         my_head%sinazm_costilt = sinazm_costilt
+!         my_head%sintilt = sintilt
+!         my_head%res     = ddiff
+!         my_head%err2    = error**2
+!         my_head%time    = dtime
+!         my_head%luse    = luse(i)
+!         my_head%b       = cvar_b(ikx)
+!         my_head%pg      = cvar_pg(ikx)
+
  
            if (lobsdiagsave) then
               do jj=1,miter
@@ -1203,6 +1221,22 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
               call nc_diag_data2d("Observation_Operator_Jacobian_endind", dhx_dx%end_ind)
               call nc_diag_data2d("Observation_Operator_Jacobian_val", real(dhx_dx%val,r_single))
            endif
+ !            call nc_diag_metadata("surface_pressure",psges*r1000)
+ !            call nc_diag_metadata("surface_height",zsges)
+ !            call nc_diag_data2d("atmosphere_pressure_coordinate", prsltmp2*r1000)
+ !            call nc_diag_data2d("atmosphere_pressure_coordinate_interface", prsitmp2*r1000)
+ !            call nc_diag_data2d("virtual_temperature", tges)
+ !            call nc_diag_data2d("geopotential_height", zges_read)
+              call nc_diag_data2d("eastward_wind", ugesprofile)
+              call nc_diag_data2d("northward_wind", vgesprofile)
+              call nc_diag_data2d("upward_wind", vgesprofile*0.0)
+              call nc_diag_data2d("fv3_geometric_height", zges)
+ !            call nc_diag_data2d("air_temperature", sngl(tsentmp))
+ !            call nc_diag_metadata("surface_temperature",sngl(skint))
+ !            call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
+ !            call nc_diag_metadata("landmask",sngl(msges))
+ !            call nc_diag_data2d("specific_humidity", qtmp)
+
    
   end subroutine contents_netcdf_diag_
 
