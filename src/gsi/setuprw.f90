@@ -1231,6 +1231,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
               call nc_diag_data2d("northward_wind", vgesprofile)
               call nc_diag_data2d("upward_wind", vgesprofile*0.0)
               call nc_diag_data2d("fv3_geometric_height", zges)
+              call nc_diag_data2d("geopotential_height", hges)
  !            call nc_diag_data2d("air_temperature", sngl(tsentmp))
  !            call nc_diag_metadata("surface_temperature",sngl(skint))
  !            call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
