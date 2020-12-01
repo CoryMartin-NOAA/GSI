@@ -170,7 +170,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind) dlnp,pobl,zob
   real(r_kind) sin2,termg,termr,termrg
   real(r_kind) psges,zsges,zsges0
-  real(r_kind),dimension(nsig):: zges,hges,ugesprofile,vgesprofile
+  real(r_kind),dimension(nsig):: zges,hges,ugesprofile,vgesprofile,hges_add_zs
   real(r_kind),dimension(nsig):: wgesprofile!,vTgesprofile,refgesprofile
   real(r_kind) prsltmp(nsig)
   real(r_kind) sfcchk  
@@ -379,6 +379,8 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
           nsig,mype,nfldsig)
      call tintrp2a1(geop_hgtl,hges,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
+
+     hges_add_zs=hges+zsges
 
 !    Convert geopotential height at layer midpoints to geometric height using
 !    equations (17, 20, 23) in MJ Mahoney's note "A discussion of various
@@ -1232,6 +1234,7 @@ subroutine setuprw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
               call nc_diag_data2d("upward_wind", vgesprofile*0.0)
               call nc_diag_data2d("fv3_geometric_height", zges)
               call nc_diag_data2d("geopotential_height", hges)
+              call nc_diag_data2d("geopotential_height_addzs", hges_add_zs)
  !            call nc_diag_data2d("air_temperature", sngl(tsentmp))
  !            call nc_diag_metadata("surface_temperature",sngl(skint))
  !            call nc_diag_metadata("surface_roughness", sngl(sfcr/r100))
