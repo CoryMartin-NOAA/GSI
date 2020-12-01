@@ -616,8 +616,24 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
           mype,nfldsig)
      call tintrp2a1(ges_lnprsl,prsltmp,dlat,dlon,dtime,hrdifsig,&
           nsig,mype,nfldsig)
+        prsltmp2 = exp(prsltmp)  ! convert from ln p to cb
 !    call tintrp2a11(ges_z,zges,dlat,dlon,dtime,hrdifsig,&
 !         mype,nfldsig)
+
+     call tintrp2a1(ges_tsen,tsentmp,dlat,dlon,dtime,hrdifsig,&
+          nsig,mype,nfldsig)
+     call tintrp2a1(ges_tv,tvtmp,dlat,dlon,dtime,hrdifsig,&
+          nsig,mype,nfldsig)
+     call tintrp2a1(ges_q,qtmp,dlat,dlon,dtime,hrdifsig,&
+          nsig,mype,nfldsig)
+     call tintrp2a1(ges_u,utmp,dlat,dlon,dtime,hrdifsig,&
+          nsig,mype,nfldsig)
+     call tintrp2a1(ges_v,vtmp,dlat,dlon,dtime,hrdifsig,&
+          nsig,mype,nfldsig)
+     call tintrp2a1(geop_hgtl,hsges,dlat,dlon,dtime,hrdifsig,&
+          nsig,mype,nfldsig)
+     call tintrp2a11(ges_z,zges,dlat,dlon,dtime,hrdifsig,&
+          mype,nfldsig)
 
      drpx=zero
      if(sfctype .and. .not.twodvar_regional) then
@@ -640,17 +656,6 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            msges=1
         endif
 
-        call tintrp2a1(ges_tv,tvtmp,dlat,dlon,dtime,hrdifsig,&
-             nsig,mype,nfldsig)
-        call tintrp2a1(ges_q,qtmp,dlat,dlon,dtime,hrdifsig,&
-             nsig,mype,nfldsig)
-        call tintrp2a1(ges_u,utmp,dlat,dlon,dtime,hrdifsig,&
-             nsig,mype,nfldsig)
-        call tintrp2a1(ges_v,vtmp,dlat,dlon,dtime,hrdifsig,&
-             nsig,mype,nfldsig)
-        call tintrp2a1(geop_hgtl,hsges,dlat,dlon,dtime,hrdifsig,&
-             nsig,mype,nfldsig)
-  
         psges2  = psges          ! keep in cb
         prsltmp2 = exp(prsltmp)  ! convert from ln p to cb
         call SFC_WTQ_FWD (psges2, tgges,&
@@ -1748,6 +1753,9 @@ subroutine setupt(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
     call nc_diag_data2d("eastward_wind", sngl(utmp))
     call nc_diag_data2d("geopotential_height", sngl(hsges))
     call nc_diag_metadata("surface_pressure", sngl(psges*r1000))
+!   call nc_diag_data2d("atmosphere_pressure_coordinate", prsltmp*r1000)
+!   call nc_diag_data2d("atmosphere_pressure_coordinate_interface", prsitmp2*r1000)
+
 
 
     if (save_jacobian) then
