@@ -124,7 +124,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   use gridmod, only: nsig,get_ij,twodvar_regional
   use constants, only: zero,one_tenth,one,half,pi,g_over_rd, &
              huge_r_kind,tiny_r_kind,two,huge_single, &
-             r1000,wgtlim,tiny_single,r10,three
+             r1000,wgtlim,tiny_single,r10,three,r100
   use jfunc, only: jiter,last,jiterstart,miter
   use qcmod, only: dfact,dfact1,npres_print,vqc,nvqc
   use guess_grids, only: hrdifsig,ges_lnprsl,nfldsig,ntguessig
@@ -173,7 +173,8 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
   real(r_kind) val2,ress,ressw2,val,valqc
   real(r_kind) cg_t,cvar,wgt,rat_err2,qcgross
   real(r_kind),dimension(nobs):: dup
-  real(r_kind),dimension(nsig):: prsltmp
+  !real(r_kind),dimension(nsig):: prsltmp
+  real(r_kind),dimension(nsig):: prsltmp, prsltmp2, tvges
   real(r_kind),dimension(nele,nobs):: data
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
 
@@ -380,6 +381,9 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
      call tintrp2a11(ges_ps,psges,dlat,dlon,dtime,hrdifsig,&
         mype,nfldsig)
      call tintrp2a1(ges_lnprsl,prsltmp,dlat,dlon,dtime,hrdifsig,&
+        nsig,mype,nfldsig)
+     prsltmp2 = exp(prsltmp)  ! convert from ln p to cb
+     call tintrp2a1(ges_tv,tvges,dlat,dlon,dtime,hrdifsig,&
         nsig,mype,nfldsig)
 
 ! Convert pressure to grid coordinates
@@ -864,7 +868,7 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
            call nc_diag_metadata("Latitude",                sngl(data(ilate,i))    )
            call nc_diag_metadata("Longitude",               sngl(data(ilone,i))    )
            call nc_diag_metadata("Station_Elevation",       sngl(data(istnelv,i))  )
-           call nc_diag_metadata("Pressure",                sngl(data(ipres,i)*r10))
+           call nc_diag_metadata("Pressure",                sngl(data(ipres,i)*r10*r100))
            call nc_diag_metadata("Height",                  sngl(dhgt)             )
            call nc_diag_metadata("Time",                    sngl(dtime-time_offset))
            call nc_diag_metadata("Prep_QC_Mark",            sngl(data(iqc,i))      )
@@ -877,13 +881,15 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
               call nc_diag_metadata("Analysis_Use_Flag",    sngl(-one)             )              
            endif
 
-           call nc_diag_metadata("Errinv_Input",            sngl(errinv_input)     )
-           call nc_diag_metadata("Errinv_Adjust",           sngl(errinv_adjst)     )
-           call nc_diag_metadata("Errinv_Final",            sngl(errinv_final)     )
+           call nc_diag_metadata("Errinv_Input",            sngl(errinv_input/r100)     )
+           call nc_diag_metadata("Errinv_Adjust",           sngl(errinv_adjst/r100)     )
+           call nc_diag_metadata("Errinv_Final",            sngl(errinv_final/r100)     )
 
-           call nc_diag_metadata("Observation",                   sngl(pob)        )
-           call nc_diag_metadata("Obs_Minus_Forecast_adjusted",   sngl(pob-pges)   )
-           call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl(pob-pgesorig))
+           call nc_diag_metadata("Observation",                   sngl(pob*r100)        )
+           call nc_diag_metadata("Obs_Minus_Forecast_adjusted",   sngl(pob-pges)*r100   )
+           call nc_diag_metadata("Obs_Minus_Forecast_unadjusted", sngl(pob-pgesorig)*r100)
+           call nc_diag_metadata("Forecast_adjusted",sngl(pges*r100))
+           call nc_diag_metadata("Forecast_unadjusted",sngl(pgesorig*r100))
  
           if (lobsdiagsave) then
 
@@ -916,6 +922,11 @@ subroutine setupps(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsa
              call nc_diag_data2d("Observation_Operator_Jacobian_val", real(dhx_dx%val,r_single))
            endif
 
+           call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
+           call nc_diag_data2d("virtual_temperature", tvges)
+
+           call nc_diag_metadata("surface_air_pressure", pgesorig*r100 )
+           call nc_diag_metadata("surface_geopotential_height", zsges )
   end subroutine contents_netcdf_diag_
 
   subroutine final_vars_
