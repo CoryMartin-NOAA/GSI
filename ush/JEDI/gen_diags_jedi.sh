@@ -202,8 +202,9 @@ $ncpl $datobs/${prefix_obs}.ssmisu.${suffix}        ./ssmisbufr
 $ncpl $datobs/${prefix_obs}.gome.${suffix}          ./gomebufr
 $ncpl $datobs/${prefix_obs}.omi.${suffix}           ./omibufr
 $ncpl $datobs/${prefix_obs}.mls.${suffix}           ./mlsbufr
-$ncpl $datobs/${prefix_obs}oznnp8.${suffix}         ./ompsnpbufr
-$ncpl $datobs/${prefix_obs}ozntc8.${suffix}         ./ompstcbufr
+$ncpl $datobs/${prefix_obs}ompsn8.${suffix}         ./ompsnpbufr
+$ncpl $datobs/${prefix_obs}ompslp.${suffix}         ./ompslpbufr
+$ncpl $datobs/${prefix_obs}ompst8.${suffix}         ./ompstcbufr
 $ncpl $datobs/${prefix_obs}.eshrs3.${suffix}        ./hirs3bufrears
 $ncpl $datobs/${prefix_obs}.esamua.${suffix}        ./amsuabufrears
 $ncpl $datobs/${prefix_obs}.esamub.${suffix}        ./amsubbufrears
@@ -393,6 +394,7 @@ OBS_INPUT::
    ahibufr        ahi         himawari8   ahi_himawari8       0.0     3     0
    rapidscatbufr  uv          null        uv                  0.0     0     0
    ompsnpbufr     ompsnp      npp         ompsnp_npp          0.0     0     0
+   ompslpbufr     ompslp      npp         ompslp_npp          0.0     0     0
    ompstcbufr     ompstc8     npp         ompstc8_npp         0.0     2     0
 ::
   &SUPEROB_RADAR
@@ -452,7 +454,7 @@ numfile[3]=0
 diagtype[0]="conv conv_gps conv_ps conv_q conv_sst conv_t conv_uv"
 diagtype[1]="pcp_ssmi_dmsp pcp_tmi_trmm"
 diagtype[2]="sbuv2_n16 sbuv2_n17 sbuv2_n18 sbuv2_n19 gome_metop-a gome_metop-b omi_aura mls30_aura ompsnp_npp
-ompstc8_npp"
+ompstc8_npp ompslp_npp"
 diagtype[3]="hirs2_n14 msu_n14 sndr_g08 sndr_g11 sndr_g12 sndr_g13 sndr_g08_prep sndr_g11_prep sndr_g12_prep
 sndr_g13_prep sndrd1_g11 sndrd2_g11 sndrd3_g11 sndrd4_g11 sndrd1_g12 sndrd2_g12 sndrd3_g12 sndrd4_g12 sndrd1_g13
 sndrd2_g13 sndrd3_g13 sndrd4_g13 sndrd1_g14 sndrd2_g14 sndrd3_g14 sndrd4_g14 sndrd1_g15 sndrd2_g15 sndrd3_g15 sndrd4_g15
