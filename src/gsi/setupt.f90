@@ -1668,7 +1668,7 @@ subroutine setupt(lunin,mype,bwork,awork,nele,nobs,is,conv_diagsave)
     call nc_diag_data2d("specific_humidity", sngl(qtmp))
     call nc_diag_data2d("northward_wind", sngl(vtmp))
     call nc_diag_data2d("eastward_wind", sngl(utmp))
-    call nc_diag_data2d("geopotential_height", sngl(hsges))
+    call nc_diag_data2d("geopotential_height", sngl(hsges+zges))
     call nc_diag_metadata("surface_pressure", sngl(psges*r1000))
 
     ! need additional arrays for GeoVaLs for T2
@@ -1721,7 +1721,7 @@ subroutine setupt(lunin,mype,bwork,awork,nele,nobs,is,conv_diagsave)
     call nc_diag_data2d("air_temperature", sngl(tsentmp))
     call nc_diag_data2d("northward_wind", sngl(vtmp))
     call nc_diag_data2d("eastward_wind", sngl(utmp))
-    call nc_diag_data2d("geopotential_height", sngl(hsges))
+    call nc_diag_data2d("geopotential_height", sngl(hsges+zges))
     call nc_diag_metadata("surface_pressure", sngl(psges*r1000))
 
 

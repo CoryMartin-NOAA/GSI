@@ -405,8 +405,8 @@ subroutine setupps(lunin,mype,bwork,awork,nele,nobs,is,conv_diagsave)
         nsig,mype,nfldsig)
 
 ! geopotential height
-call tintrp2a1(geop_hgtl,hsges,dlat,dlon,dtime,hrdifsig,&
-               nsig,mype,nfldsig)
+     call tintrp2a1(geop_hgtl,hsges,dlat,dlon,dtime,hrdifsig,&
+                    nsig,mype,nfldsig)
 
 ! Convert pressure to grid coordinates
 
@@ -959,7 +959,7 @@ call tintrp2a1(geop_hgtl,hsges,dlat,dlon,dtime,hrdifsig,&
 
            call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
            call nc_diag_data2d("virtual_temperature", tvges)
-           call nc_diag_data2d("geopotential_height", hsges)
+           call nc_diag_data2d("geopotential_height", hsges+zsges)
 
            call nc_diag_metadata("surface_air_pressure", pgesorig*r100 )
            call nc_diag_metadata("surface_geopotential_height", zsges )
