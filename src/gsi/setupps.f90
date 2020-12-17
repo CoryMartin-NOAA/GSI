@@ -111,7 +111,7 @@ subroutine setupps(lunin,mype,bwork,awork,nele,nobs,is,conv_diagsave)
              r1000,wgtlim,tiny_single,r10,three,r100
   use jfunc, only: jiter,last,jiterstart,miter
   use qcmod, only: dfact,dfact1,npres_print,njqc,vqc
-  use guess_grids, only: hrdifsig,ges_lnprsl,nfldsig,ntguessig
+  use guess_grids, only: hrdifsig,ges_lnprsl,nfldsig,ntguessig,geop_hgtl
   use convinfo, only: nconvtype,cermin,cermax,cgross,cvar_b,cvar_pg,ictype,icsubtype
 
   use m_dtime, only: dtime_setup, dtime_check, dtime_show
@@ -153,7 +153,7 @@ subroutine setupps(lunin,mype,bwork,awork,nele,nobs,is,conv_diagsave)
   real(r_kind) val2,ress,ressw2,val,valqc
   real(r_kind) cg_ps,wgross,wnotgross,wgt,arg,exp_arg,term,rat_err2,qcgross
   real(r_kind),dimension(nobs):: dup
-  real(r_kind),dimension(nsig):: prsltmp, prsltmp2, tvges
+  real(r_kind),dimension(nsig):: prsltmp, prsltmp2, tvges, hsges
   real(r_kind),dimension(nele,nobs):: data
   real(r_single),allocatable,dimension(:,:)::rdiagbuf
 
@@ -403,6 +403,10 @@ subroutine setupps(lunin,mype,bwork,awork,nele,nobs,is,conv_diagsave)
      prsltmp2 = exp(prsltmp)  ! convert from ln p to cb
      call tintrp2a1(ges_tv,tvges,dlat,dlon,dtime,hrdifsig,&
         nsig,mype,nfldsig)
+
+! geopotential height
+call tintrp2a1(geop_hgtl,hsges,dlat,dlon,dtime,hrdifsig,&
+               nsig,mype,nfldsig)
 
 ! Convert pressure to grid coordinates
 
@@ -955,6 +959,7 @@ subroutine setupps(lunin,mype,bwork,awork,nele,nobs,is,conv_diagsave)
 
            call nc_diag_data2d("atmosphere_pressure_coordinate", sngl(prsltmp2*r1000))
            call nc_diag_data2d("virtual_temperature", tvges)
+           call nc_diag_data2d("geopotential_height", hsges)
 
            call nc_diag_metadata("surface_air_pressure", pgesorig*r100 )
            call nc_diag_metadata("surface_geopotential_height", zsges )
