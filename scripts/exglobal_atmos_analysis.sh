@@ -83,6 +83,7 @@ cnvw_option=${cnvw_option:-".false."}
 # Observation usage options
 cao_check=${cao_check:-".true."}
 ta2tb=${ta2tb:-".true."}
+BLACKLST=${BLACKLST:-".true."}
 
 # Diagnostic files options
 lobsdiag_forenkf=${lobsdiag_forenkf:-".false."}
@@ -358,6 +359,7 @@ AEROINFO=${AEROINFO:-${FIXgsi}/global_aeroinfo.txt}
 SCANINFO=${SCANINFO:-${FIXgsi}/global_scaninfo.txt}
 HYBENSINFO=${HYBENSINFO:-${FIXgsi}/global_hybens_info.l${LEVS}.txt}
 OBERROR=${OBERROR:-${FIXgsi}/prepobs_errtable.global}
+BLACKLIST=${BLACKLIST:-${FIXgsi/global_blacklist_${cyc}z}}
 
 # GSI namelist
 SETUP=${SETUP:-""}
@@ -431,6 +433,7 @@ $NLN $AEROINFO     aeroinfo
 $NLN $SCANINFO     scaninfo
 $NLN $HYBENSINFO   hybens_info
 $NLN $OBERROR      errtable
+$NLN $BLACKLIST    blacklist
 
 #If using correlated error, link to the covariance files
 if [ $USE_CORRELATED_OBERRS == "YES" ];  then
@@ -802,7 +805,7 @@ cat > gsiparm.anl << EOF
   dfact=0.75,dfact1=3.0,noiqc=.true.,oberrflg=.false.,c_varqc=0.02,
   use_poq7=.true.,qc_noirjaco3_pole=.true.,vqc=.false.,nvqc=.true.,
   aircraft_t_bc=.true.,biaspredt=1.0e5,upd_aircraft=.true.,cleanup_tail=.true.,
-  tcp_width=70.0,tcp_ermax=7.35,
+  tcp_width=70.0,tcp_ermax=7.35,blacklst=$BLACKLST,
   $OBSQC
 /
 &OBS_INPUT
