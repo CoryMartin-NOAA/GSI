@@ -744,6 +744,7 @@ subroutine read_obs(ndata,mype)
     use gsi_nstcouplermod, only: nst_gsi
 !   use gsi_nstcouplermod, only: gsi_nstcoupler_set
     use hdraobmod, only: read_hdraob,nhdt,nhdq,nhduv,nhdps,hdtlist,hdqlist,hduvlist,hdpslist,nodet,nodeq,nodeuv,nodeps
+    use read_ioda_mod, only: read_ioda_conv, read_ioda_rad
     use qcmod, only: njqc,vadwnd_l2rw_qc,nvqc
     use gsi_4dvar, only: l4dvar
     use satthin, only: super_val,super_val1,superp,makegvals,getsfc,destroy_sfc
@@ -1486,6 +1487,10 @@ subroutine read_obs(ndata,mype)
                         call read_saildrone(nread,npuse,nouse,infile,obstype,lunout,gstime,twind,sis,&
                          nobs_sub1(1,i),read_rec(i))
                     string='READ_SAILDRONE'
+                else if (index(infile,'ioda') /=0)then
+                   call read_ioda_conv(nread,npuse,nouse,infile,obstype,lunout,twind,sis,&
+                        prsl_full,hgtl_full,nobs_sub1(1,i),read_rec(i))
+                   string='READ_IODA_CONV'
                 else
                    call read_prepbufr(nread,npuse,nouse,infile,obstype,lunout,twind,sis,&
                         prsl_full,nobs_sub1(1,i),read_rec(i))
@@ -1581,6 +1586,10 @@ subroutine read_obs(ndata,mype)
                   call read_saildrone(nread,npuse,nouse,infile,obstype,lunout,gstime,twind,sis,&
                        nobs_sub1(1,i),read_rec(i))
                     string='READ_SAILDRONE'
+                else if (index(infile,'ioda') /=0)then
+                   call read_ioda_conv(nread,npuse,nouse,infile,obstype,lunout,twind,sis,&
+                        prsl_full,hgtl_full,nobs_sub1(1,i),read_rec(i))
+                   string='READ_IODA_CONV'
                 else
                   call read_prepbufr(nread,npuse,nouse,infile,obstype,lunout,twind,sis,&
                      prsl_full,nobs_sub1(1,i),read_rec(i))
@@ -1929,6 +1938,12 @@ subroutine read_obs(ndata,mype)
                        mype_root,mype_sub(mm1,i),npe_sub(i),mpi_comm_sub(i), &
                        nobs_sub1(1,i),read_rec(i),dval_use)
                   string='READ_VIIRS'
+               else if (index(infile,'ioda') /=0)then
+                  call read_ioda_rad(mype,val_dat,ithin,isfcalc,rmesh,dplat(i),gstime,&
+                     infile,lunout,obstype,nread,npuse,nouse,twind,sis, &
+                     mype_root,mype_sub(mm1,i),npe_sub(i),mpi_comm_sub(i),nobs_sub1(1,i),&
+                     read_rec(i),read_ears_rec(i),read_db_rec(i),dval_use,radmod))
+                  string='READ_IODA_RAD'
                end if rad_obstype_select
 
 !         Process ozone data
