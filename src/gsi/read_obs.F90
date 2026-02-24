@@ -167,6 +167,7 @@ subroutine read_obs_check (lexist,filename,jsatid,dtype,minuse,nread)
   use chemmod, only : oneobtest_chem,oneob_type_chem,&
        code_pm25_ncbufr,code_pm25_anowbufr,code_pm10_ncbufr,code_pm10_anowbufr
   use directDA_radaruse_mod, only: l_use_dbz_directDA
+  use read_ioda_mod, only: check_ioda_ncfile
 
   implicit none
 
@@ -196,6 +197,17 @@ subroutine read_obs_check (lexist,filename,jsatid,dtype,minuse,nread)
      if(trim(dtype) == 'dbz' )return
   end if
   if(trim(dtype) == 'fed' )return
+
+  if (index(trim(filename),'ioda') /=0) then
+     call check_ioda_ncfile(filename,nread)
+     lexist = nread > 0
+     if (lexist) then
+        write(6,*)'read_obs_check: IODA file ',trim(filename),' nlocs=',nread,dtype,jsatid
+     else
+        write(6,*) '***read_obs_check*** IODA file not found or invalid: ', trim(filename)
+     end if
+     return
+  end if
 
 ! Use routine as usual
 
@@ -1942,7 +1954,7 @@ subroutine read_obs(ndata,mype)
                   call read_ioda_rad(mype,val_dat,ithin,isfcalc,rmesh,dplat(i),gstime,&
                      infile,lunout,obstype,nread,npuse,nouse,twind,sis, &
                      mype_root,mype_sub(mm1,i),npe_sub(i),mpi_comm_sub(i),nobs_sub1(1,i),&
-                     read_rec(i),read_ears_rec(i),read_db_rec(i),dval_use,radmod))
+                     read_rec(i),read_ears_rec(i),read_db_rec(i),dval_use,radmod)
                   string='READ_IODA_RAD'
                end if rad_obstype_select
 

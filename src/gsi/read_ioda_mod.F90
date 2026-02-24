@@ -7,8 +7,9 @@ module read_ioda_mod
 !           conventional and radiance observations from IODA-format files.
 !
 ! subroutines:
-!   read_ioda_conv  - read conventional observations from an IODA file
-!   read_ioda_rad   - read radiance observations from an IODA file
+!   read_ioda_conv     - read conventional observations from an IODA file
+!   read_ioda_rad      - read radiance observations from an IODA file
+!   check_ioda_ncfile  - open an IODA netCDF file and return the Location dimension size
 !
 !$$$
 
@@ -18,6 +19,7 @@ module read_ioda_mod
   private
   public :: read_ioda_conv
   public :: read_ioda_rad
+  public :: check_ioda_ncfile
 
 contains
 
@@ -61,8 +63,8 @@ contains
     integer(i_kind),                       intent(in   ) :: lunout
     real(r_kind),                          intent(in   ) :: twind
     character(20),                         intent(in   ) :: sis
-    real(r_kind),  allocatable, dimension(:,:,:), intent(in) :: prsl_full
-    real(r_kind),  allocatable, dimension(:,:,:), intent(in) :: hgtl_full
+    real(r_kind),  dimension(:,:,:),             intent(in) :: prsl_full
+    real(r_kind),  dimension(:,:,:),             intent(in) :: hgtl_full
     integer(i_kind),                       intent(inout) :: nobs
     integer(i_kind),                       intent(inout) :: read_rec
 
@@ -160,5 +162,67 @@ contains
 
     return
   end subroutine read_ioda_rad
+
+  subroutine check_ioda_ncfile(infile, nlocs)
+!$$$  subprogram documentation block
+!
+! subprogram: check_ioda_ncfile
+!
+! abstract: Open an IODA-format netCDF file and attempt to read the size of
+!           the "Location" dimension.  On success, nlocs is set to that size.
+!           On any failure (file not found, dimension absent, etc.) nlocs is
+!           returned as zero.
+!
+!   input argument list:
+!     infile  - path to the IODA netCDF file
+!
+!   output argument list:
+!     nlocs   - number of locations (Location dimension size); 0 on failure
+!
+!$$$
+    use kinds,  only: i_kind
+    use netcdf, only: nf90_open, nf90_close, nf90_inq_dimid, &
+                      nf90_inquire_dimension, NF90_NOWRITE, NF90_NOERR
+
+    implicit none
+
+    ! Argument declarations
+    character(*),    intent(in   ) :: infile
+    integer(i_kind), intent(  out) :: nlocs
+
+    ! Local variables
+    integer :: ncid, dimid, ierr, dim_len
+
+    nlocs = 0
+
+    ! Open the file
+    ierr = nf90_open(trim(infile), NF90_NOWRITE, ncid)
+    if (ierr /= NF90_NOERR) then
+      write(6,*) 'CHECK_IODA_NCFILE: unable to open file: ', trim(infile)
+      return
+    end if
+
+    ! Inquire the Location dimension id
+    ierr = nf90_inq_dimid(ncid, 'Location', dimid)
+    if (ierr /= NF90_NOERR) then
+      write(6,*) 'CHECK_IODA_NCFILE: Location dimension not found in: ', trim(infile)
+      ierr = nf90_close(ncid)
+      return
+    end if
+
+    ! Get the dimension length
+    ierr = nf90_inquire_dimension(ncid, dimid, len=dim_len)
+    if (ierr /= NF90_NOERR) then
+      write(6,*) 'CHECK_IODA_NCFILE: unable to read Location dimension size in: ', trim(infile)
+      ierr = nf90_close(ncid)
+      return
+    end if
+
+    nlocs = int(dim_len, i_kind)
+
+    ierr = nf90_close(ncid)
+
+    return
+  end subroutine check_ioda_ncfile
 
 end module read_ioda_mod

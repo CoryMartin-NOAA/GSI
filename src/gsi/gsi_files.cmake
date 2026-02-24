@@ -501,6 +501,7 @@ read_gsb.f90
 read_guess.F90
 read_iasi.f90
 read_iasing.f90
+read_ioda_mod.F90
 read_l2bufr_mod.f90
 read_lag.f90
 read_lidar.f90
