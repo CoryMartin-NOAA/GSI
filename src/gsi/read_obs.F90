@@ -1757,11 +1757,19 @@ subroutine read_obs(ndata,mype)
                   obstype == 'mhs'   .or. obstype == 'hirs4' .or.  &
                   obstype == 'hirs3' .or. obstype == 'hirs2' .or.  &
                   obstype == 'ssu' )) then
-                call read_bufrtovs(mype,val_dat,ithin,isfcalc,rmesh,dplat(i),gstime,&
-                     infile,lunout,obstype,nread,npuse,nouse,twind,sis, &
-                     mype_root,mype_sub(mm1,i),npe_sub(i),mpi_comm_sub(i), nobs_sub1(1,i), &
-                     read_rec(i),read_ears_rec(i),read_db_rec(i),dval_use,radmod)
-                string='READ_BUFRTOVS'
+                if (infile(len_trim(infile)-2:len_trim(infile)) == '.nc') then
+                   call read_ioda_nc(mype,val_dat,ithin,isfcalc,rmesh,dplat(i),gstime,&
+                        infile,lunout,obstype,nread,npuse,nouse,twind,sis, &
+                        mype_root,mype_sub(mm1,i),npe_sub(i),mpi_comm_sub(i), nobs_sub1(1,i), &
+                        read_rec(i),read_ears_rec(i),read_db_rec(i),dval_use,radmod)
+                   string='READ_IODA_NC'
+                else
+                   call read_bufrtovs(mype,val_dat,ithin,isfcalc,rmesh,dplat(i),gstime,&
+                        infile,lunout,obstype,nread,npuse,nouse,twind,sis, &
+                        mype_root,mype_sub(mm1,i),npe_sub(i),mpi_comm_sub(i), nobs_sub1(1,i), &
+                        read_rec(i),read_ears_rec(i),read_db_rec(i),dval_use,radmod)
+                   string='READ_BUFRTOVS'
+                endif
 
 !            Process atms data
              else if (obstype == 'atms') then
